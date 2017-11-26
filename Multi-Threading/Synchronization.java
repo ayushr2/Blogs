@@ -2,22 +2,40 @@
  * This class contains the driver code which creates the threads and handles the output.
  *
  * @author Ayush Ranjan
+ * @see <a href="https://stackoverflow.com/questions/8916723/can-two-processes-simultaneously-run-on-one-cpu-core">Can one core execute two instructions at the same time?</a>
+ * @see <a href="https://stackoverflow.com/questions/27578208/does-multi-threading-improve-performance-scenario-java">How does multi-threading improve performance?</a>
  * @since 25th November 2017
  */
 public class Synchronization {
-    // the adder would sum numbers up to LIMIT
+    // the adder1 would sum numbers up to LIMIT
     public static final int LIMIT = 1000;
     // determines if the threads should be synchronised or not
     public static final boolean SYNCHRONIZE = false;
     // determines whether the program should output the thread id of the current thread being executed
     public static final boolean THREAD_ID_OUTPUT = false;
+    // determines whether to run code with two or one adder objects
+    public static final boolean RUN_WITH_TWO_ADDERS = false;
+    // determines whether we should run the two Adders within the Thread objects within diff synchronization blocks
+    public static final boolean SEPARATE_SYNC_BLOCKS = false;
+
+    // NOTE : SYNCHRONIZE = false and THREAD_ID_OUTPUT = true does not give the expected output!
+    // Because System.out.println() is a heavy IO operation, it automatically synchronises the two threads outputting
 
     public static void main(String[] args) {
-        Adder adder = new Adder();
+        Adder adder1 = new Adder();
+        Adder adder2 = new Adder();
 
-        // create the Threads with the same Adder object
-        AddRunnable addRunnable1 = new AddRunnable(adder);
-        AddRunnable addRunnable2 = new AddRunnable(adder);
+        AddRunnable addRunnable1;
+        AddRunnable addRunnable2;
+
+        // create the Threads with the same Adder objects
+        if (RUN_WITH_TWO_ADDERS) {
+            addRunnable1 = new AddRunnable(adder1, adder2);
+            addRunnable2 = new AddRunnable(adder1, adder2);
+        } else {
+            addRunnable1 = new AddRunnable(adder1);
+            addRunnable2 = new AddRunnable(adder1);
+        }
 
         // initiate threads and start them
         addRunnable1.start();
@@ -36,7 +54,12 @@ public class Synchronization {
         correct *= 2; // because we are doing the same addition on the same object two times using two threads
 
         // output the difference between correct value and actual value. Output represents error
-        System.out.println(correct - adder.getCount());
+        System.out.print("Error in first adder : ");
+        System.out.println(correct - adder1.getCount());
+        if (RUN_WITH_TWO_ADDERS) {
+            System.out.print("Error in second adder : ");
+            System.out.println(correct - adder2.getCount());
+        }
     }
 }
 
@@ -45,15 +68,28 @@ public class Synchronization {
  * reads numbers from a text file and keeps adding them to the Adder instance object.
  */
 class AddRunnable extends Thread {
-    private final Adder adder;
+    private final Adder adder1;
+    private final Adder adder2;
 
     /**
-     * Constructor which initiates the instance variable which holds the Adder object.
+     * Constructor which initiates just one of the instance variables which holds the Adder object.
      *
-     * @param adder Adder object with which we initiate our instance variable
+     * @param adder1 Adder object with which we initiate our first Adder instance variable
      */
-    public AddRunnable(Adder adder) {
-        this.adder = adder;
+    public AddRunnable(Adder adder1) {
+        this.adder1 = adder1;
+        this.adder2 = null;
+    }
+
+    /**
+     * Constructor which initiates both the instance variable which holds the Adder object.
+     *
+     * @param adder1 Adder object with which we initiate our first Adder instance variable
+     * @param adder2 Adder object with which we initiate our second Adder instance variable
+     */
+    public AddRunnable(Adder adder1, Adder adder2) {
+        this.adder1 = adder1;
+        this.adder2 = adder2;
     }
 
     /**
@@ -63,29 +99,43 @@ class AddRunnable extends Thread {
     @Override
     public void run() {
         if (Synchronization.SYNCHRONIZE) {
-            synchronized (adder) {
-                addSumToLimit();
+            if (Synchronization.SEPARATE_SYNC_BLOCKS) {
+                synchronized (adder1) {
+                    addSumToLimit(adder1);
+                }
+                synchronized (adder2) {
+                    addSumToLimit(adder2);
+                }
+            } else {
+                synchronized (adder1) {
+                    addSumToLimit(adder1);
+                    addSumToLimit(adder2);
+                }
             }
         } else {
-            addSumToLimit();
+            addSumToLimit(adder1);
+            addSumToLimit(adder2);
         }
     }
 
     /**
-     * Add the numbers from 0 to LIMIT to the adder. Outputs the currently running thread id if the THREAD_ID_OUTPUT flag
+     * Add the numbers from 0 to LIMIT to the adder1. Outputs the currently running thread id if the THREAD_ID_OUTPUT flag
      * is true. Hence we can see how the program switches between the threads.
      */
-    private void addSumToLimit() {
+    private void addSumToLimit(Adder adder) {
+      if (adder == null)
+        return;
+
         for (int i = 0; i <= Synchronization.LIMIT; i++) {
+            adder.add(i);
             if (Synchronization.THREAD_ID_OUTPUT)
                 System.out.println(this.getId());
-            adder.add(i);
         }
     }
 }
 
 /**
- * The object is a simple adder. It can add to itself and spit out its current value.
+ * The object is a simple adder1. It can add to itself and spit out its current value.
  */
 class Adder {
     private int count; // default value upon initialisation is 0
