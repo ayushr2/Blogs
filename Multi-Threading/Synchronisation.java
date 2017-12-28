@@ -2,8 +2,6 @@
  * This class contains the driver code which creates the threads and handles the output.
  *
  * @author Ayush Ranjan
- * @see <a href="https://stackoverflow.com/questions/8916723/can-two-processes-simultaneously-run-on-one-cpu-core">Can one core execute two instructions at the same time?</a>
- * @see <a href="https://stackoverflow.com/questions/27578208/does-multi-threading-improve-performance-scenario-java">How does multi-threading improve performance?</a>
  * @since 25th November 2017
  */
 public class Synchronisation {
