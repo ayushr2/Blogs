@@ -94,27 +94,31 @@ class AddRunnable extends Thread {
      * Calls the addSumToLimit method inside the synchronized block if the SYNCHRONIZE flag is true else calls it
      * normally.
      */
-    @Override
-    public void run() {
-        if (Synchronisation.SYNCHRONIZE) {
-            if (Synchronisation.SEPARATE_SYNC_BLOCKS) {
-                synchronized (adder1) {
-                    addSumToLimit(adder1);
-                }
-                synchronized (adder2) {
-                    addSumToLimit(adder2);
-                }
-            } else {
-                synchronized (adder1) {
-                    addSumToLimit(adder1);
-                    addSumToLimit(adder2);
-                }
-            }
-        } else {
-            addSumToLimit(adder1);
-            addSumToLimit(adder2);
-        }
-    }
+     @Override
+     public void run() {
+         if (Main.SYNCHRONIZE) {
+             if (Main.SEPARATE_SYNC_BLOCKS) {
+                 synchronized (adder1) {
+                     addSumToLimit(adder1);
+                 }
+                 if (Main.RUN_WITH_TWO_ADDERS) {
+                     synchronized (adder2) {
+                         addSumToLimit(adder2);
+                     }
+                 }
+             } else {
+                 synchronized (adder1) {
+                     addSumToLimit(adder1);
+                     if (Main.RUN_WITH_TWO_ADDERS)
+                         addSumToLimit(adder2);
+                 }
+             }
+         } else {
+             addSumToLimit(adder1);
+             if (Main.RUN_WITH_TWO_ADDERS)
+                 addSumToLimit(adder2);
+         }
+     }
 
     /**
      * Add the numbers from 0 to LIMIT to the adder1. Outputs the currently running thread id if the THREAD_ID_OUTPUT flag
