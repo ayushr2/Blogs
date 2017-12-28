@@ -6,7 +6,7 @@
  * @see <a href="https://stackoverflow.com/questions/27578208/does-multi-threading-improve-performance-scenario-java">How does multi-threading improve performance?</a>
  * @since 25th November 2017
  */
-public class Synchronization {
+public class Synchronisation {
     // the adder1 would sum numbers up to LIMIT
     public static final int LIMIT = 1000;
     // determines if the threads should be synchronised or not
@@ -98,8 +98,8 @@ class AddRunnable extends Thread {
      */
     @Override
     public void run() {
-        if (Synchronization.SYNCHRONIZE) {
-            if (Synchronization.SEPARATE_SYNC_BLOCKS) {
+        if (Synchronisation.SYNCHRONIZE) {
+            if (Synchronisation.SEPARATE_SYNC_BLOCKS) {
                 synchronized (adder1) {
                     addSumToLimit(adder1);
                 }
@@ -126,9 +126,9 @@ class AddRunnable extends Thread {
       if (adder == null)
         return;
 
-        for (int i = 0; i <= Synchronization.LIMIT; i++) {
+        for (int i = 0; i <= Synchronisation.LIMIT; i++) {
             adder.add(i);
-            if (Synchronization.THREAD_ID_OUTPUT)
+            if (Synchronisation.THREAD_ID_OUTPUT)
                 System.out.println(this.getId());
         }
     }
